@@ -9,16 +9,6 @@ import csv
 from multiprocessing import Process
 from validate_bb import validate
 
-# ROOT = 'D:\jd\WindowsNoEditor\PythonAPI\my\data\\2022-07-06 17.35.28\\1.6\\'
-#
-# NAME = '0001664263'
-#
-# labels = validate(ROOT+'posit\\'+NAME+'.pkl',
-#                   ROOT+'lidar\\'+NAME+'.bin',
-#                   ROOT+'pics\\'+NAME+'.png',
-#                   ROOT+'label\\'+NAME+'.txt',)
-
-
 def get_frames(PATH):
     for i in [0.4]:
         path = PATH+'\\'+str(i)+'\\lidar'
