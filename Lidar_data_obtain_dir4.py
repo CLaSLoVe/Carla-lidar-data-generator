@@ -9,6 +9,7 @@ import sys
 import time
 from client_bounding_boxes import ClientSideBoundingBoxes
 from tools import *
+from validate_bb import batch_validate
 
 
 try:
@@ -56,10 +57,10 @@ def _on_gnss_event(event, path):
 
 def only_xyzyaw(event, vehicle, path):
     name = time2name(event.timestamp)
-    x = event.transform.location.x
-    y = event.transform.location.y
-    z = event.transform.location.z
-    yaw = np.radians(event.transform.rotation.yaw)
+    x = vehicle.get_transform().location.x
+    y = vehicle.get_transform().location.y
+    z = vehicle.get_transform().location.z
+    yaw = np.radians(vehicle.get_transform().rotation.yaw)
     array = np.array([x, y, z, yaw])
     if RECORD:
         np.savetxt(path + '/' + name + '.txt', array)
@@ -173,6 +174,7 @@ def run_simulation(client, t=1200):
             world.wait_for_tick()
             world_frame = world.get_snapshot().frame - init_frame
             print(world_frame)
+        # print(batch_validate(PATH))
     finally:
 
         client.apply_batch([carla.command.DestroyActor(x) for x in [vehicle]])
@@ -249,6 +251,75 @@ def save_lidar_image(lidar, world_par, image, path=None):
 
         actor_dict[actor_id]['bb'] = bb_sensor
         actor_dict[actor_id]['draw'] = [x, y]
+        # bb_sensor = bb_sensor[:, :3]
+        # Oz = (bb_sensor[0] + bb_sensor[2]) / 2
+        # Ox = (bb_sensor[5] + bb_sensor[2]) / 2
+        # Oy = (bb_sensor[5] + bb_sensor[0]) / 2
+        # O  = (bb_sensor[6] + bb_sensor[0]) / 2
+        #
+        # Px = unit_vector(Ox - O)
+        # Py = unit_vector(Oy - O)
+        # Pz = unit_vector(Oz - O)
+        # #
+        # actor_co = np.array([Px, Py, Pz]).T
+        # vecs = local_lidar_points - O
+        # p = np.dot(vecs, actor_co)
+        # p = np.fabs(p)
+        # l = shape.x  # *1.15
+        # w = shape.y  # *1.15
+        # h = shape.z  # *1.15
+        # valid_array = np.logical_and(np.logical_and(p[:, 0] <= l, p[:, 1] <= w), p[:, 2] <= h)
+        # ans = np.sum(valid_array)
+        # L = np.sqrt(O[0]**2+O[1]**2)
+        #
+        #
+        # if L < 50:
+        #     v = THRESHOLD[0]
+        # elif L < 100:
+        #     v = THRESHOLD[1]
+        # else:
+        #     v = THRESHOLD[2]
+        #
+        # if actor_dict[actor]['type'][0] == 'w':
+        #     v = v / 2
+        #     if ans >= v:
+        #         actor_dict[actor]['valid'] = 1
+        # else:
+        #     if ans >= v:
+        #         actor_dict[actor]['valid'] = 1
+        #
+        # if actor_dict[actor]['valid']:
+        #     if O[0]-ego_transform.location.x == 0:
+        #         absolute_actor_yaw = 90
+        #     else:
+        #         absolute_actor_yaw = np.arctan((O[1]-ego_transform.location.y)/(O[0]-ego_transform.location.x))
+        #     alpha = degree2radian(np.degrees(absolute_actor_yaw - image.transform.rotation.yaw))
+        #     yaw = degree2radian(actor.get_transform().rotation.yaw - image.transform.rotation.yaw)
+        #     actor_vec = np.array([(O[0]-ego_transform.location.x), (O[1]-ego_transform.location.y)])
+        #     Lxy = np.sqrt(actor_vec[0]**2+actor_vec[1]**2)
+        #     dx = Lxy*np.cos(alpha)
+        #     dy = Lxy*np.sin(alpha)
+        #     dz = O[2]-ego_transform.location.z
+        #     string = [classify_actor(actor_dict[actor]),
+        #               1,
+        #               1,
+        #               alpha,
+        #               1,
+        #               1,
+        #               1,
+        #               1,
+        #               h * 2,
+        #               w * 2,
+        #               l * 2,
+        #               dx,
+        #               dy,
+        #               dz,
+        #               yaw,
+        #               1]
+        #     labels.append(string)
+        #     if SAVE_PIC:
+        #         for i in range(4):
+        #             cv2.line(lidar_img, (int(y[i]), int(x[i])), (int(y[i + 1]), int(x[i + 1])), (0, 255, 0), 1, 4)
     posit = {}
     posit['x'] = ego_transform.location.x
     posit['y'] = ego_transform.location.y
