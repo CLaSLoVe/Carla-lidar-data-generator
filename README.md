@@ -1,5 +1,5 @@
 # Carla-lidar-data-generator
-To generate lidar data with carla.
+To generate lidar dataset with carla.
 
 1. run CARLA
 
