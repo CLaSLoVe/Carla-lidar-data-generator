@@ -14,3 +14,7 @@ To generate lidar dataset with carla.
 5. run validate_bb_thread.py with arg of dataset path to validate the bbox.
 
 6. dataset obtained.
+
+
+https://github.com/CLaSLoVe/Carla-lidar-data-generator/assets/108873125/382c8aed-32a0-4b52-ae66-00b13dff379b
+
